@@ -196,14 +196,16 @@ public class ProxyTask implements Callable<Void> {
         byte[] buffer = new byte[1024*4];
         int len = 0;
         logger.debug("available:"+isTarget.available());
-        while( (len = isTarget.read(buffer)) != -1){
-            logger.debug("从目标网站读取到数据长度："+len);
-            osClient.write(buffer,0,len);
-            osClient.flush();
-            if (targetSocket.isOutputShutdown() || inSocket.isClosed()) {
-                break;
+        try {
+            while ((len = isTarget.read(buffer)) != -1) {
+                logger.debug("从目标网站读取到数据长度：" + len);
+                osClient.write(buffer, 0, len);
+                osClient.flush();
+                if (targetSocket.isOutputShutdown() || inSocket.isClosed()) {
+                    break;
+                }
             }
-        }
+        }catch (SocketTimeoutException e){}
     }
 
     /**
@@ -217,12 +219,16 @@ public class ProxyTask implements Callable<Void> {
         byte[] buffer = new byte[1024*4];
         int len = 0;
         logger.debug("available:"+isClient.available());
-        while( (len = isClient.read(buffer)) != -1){
-            osTarget.write(buffer,0,len);
-            osTarget.flush();
-            if (inSocket.isOutputShutdown() || targetSocket.isClosed()) {
-                break;
+        try {
+            while ((len = isClient.read(buffer)) != -1) {
+                osTarget.write(buffer, 0, len);
+                osTarget.flush();
+                if (inSocket.isOutputShutdown() || targetSocket.isClosed()) {
+                    break;
+                }
             }
+        }catch(SocketTimeoutException e){
+
         }
 
     }
